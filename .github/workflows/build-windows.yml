@@ -92,18 +92,17 @@ jobs:
           cmake --build "%BUILD_PATH%\tdesktop\out" --config Release --target Telegram -- /m
 
       - name: Locate build output
-        shell: cmd
-        run: |
-          dir /s /b "%BUILD_PATH%\tdesktop\out\Release\AraGram.exe"
+      shell: cmd
+      run: |
+        dir /s /b "%BUILD_PATH%\tdesktop\Telegram\out\Release\*.exe"
 
-      - name: Upload AraGram.exe artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: AraGram-windows-x64
-          path: |
-            ${{ env.BUILD_PATH }}\tdesktop\out\Release\AraGram.exe
-          if-no-files-found: error
-          retention-days: 14
+    - name: Upload AraGram.exe artifact
+      uses: actions/upload-artifact@v4
+      with:
+        name: AraGram-windows-x64
+        path: ${{ env.BUILD_PATH }}/tdesktop/Telegram/out/Release/*.exe
+        if-no-files-found: error
+        retention-days: 14
 
 # Troubleshooting:
 # - "toolset not found" / vcvars errors: the three `call ... || call ...`
