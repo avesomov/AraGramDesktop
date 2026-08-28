@@ -92,17 +92,27 @@ jobs:
           cmake --build "%BUILD_PATH%\tdesktop\out" --config Release --target Telegram -- /m
 
       - name: Locate build output
-      shell: cmd
-      run: |
-        dir /s /b "%BUILD_PATH%\tdesktop\Telegram\out\Release\*.exe"
+        id: locate
+        shell: pwsh
+        run: |
+          $found = Get-ChildItem -Path "$env:BUILD_PATH" -Filter "AraGram.exe" -Recurse -ErrorAction SilentlyContinue
+          if (-not $found) {
+            Write-Error "AraGram.exe not found anywhere under $env:BUILD_PATH"
+            Get-ChildItem -Path "$env:BUILD_PATH\tdesktop\Telegram\out" -Recurse -ErrorAction SilentlyContinue |
+              Select-Object -First 50 FullName | Format-Table -AutoSize
+            exit 1
+          }
+          $found | ForEach-Object { Write-Host "Found: $($_.FullName)" }
+          "exe_path=$($found[0].FullName)" >> $env:GITHUB_OUTPUT
 
-    - name: Upload AraGram.exe artifact
-      uses: actions/upload-artifact@v4
-      with:
-        name: AraGram-windows-x64
-        path: ${{ env.BUILD_PATH }}/tdesktop/Telegram/out/Release/*.exe
-        if-no-files-found: error
-        retention-days: 14
+      - name: Upload AraGram.exe artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: AraGram-windows-x64
+          path: |
+            ${{ env.BUILD_PATH }}\**\AraGram.exe
+          if-no-files-found: error
+          retention-days: 14
 
 # Troubleshooting:
 # - "toolset not found" / vcvars errors: the three `call ... || call ...`
